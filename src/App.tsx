@@ -7,41 +7,62 @@ const socket = io('ws://localhost:3000');
 type User = {
   clientId: string;
   username: string;
-  card: string | null;
+  card: string | undefined;
 };
 
 function App() {
-  const [room, setRoom] = useState<string>();
+  const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>();
   const [users, setUsers] = useState<User[]>();
+  const [reveal, setReveal] = useState<boolean>(false);
 
   const handleCardSelect = (card: number) => {
-    socket.emit('card', { card, username, room });
+    socket.emit('card', { card, username, room: roomId });
   };
 
   const createRoom = () => {
     socket.emit('create_room', username);
   };
 
-  useEffect(() => {
-    socket.on('new_room', newRoom => {
-      setRoom(newRoom);
-    });
-
-    socket.on('users', users => {
-      setUsers(users);
-    });
-  }, []);
+  const revealCards = () => {
+    socket.emit('reveal_cards', roomId);
+    setReveal(true);
+  };
 
   const joinRoom = () => {
-    socket.emit('join_room', { room, username });
+    socket.emit('join_room', { roomId, username });
   };
+
+  const startNewVoting = () => {
+    socket.emit('start_new_voting', roomId);
+    setReveal(false);
+  };
+
+  useEffect(() => {
+    socket.on('new_room', newRoom => {
+      setRoomId(newRoom);
+    });
+
+    socket.on('users', room => {
+      setUsers(room.users);
+      setReveal(room.reveal);
+    });
+
+    socket.on('reveal_cards', () => {
+      setReveal(true);
+    });
+
+    socket.on('start_new_voting', room => {
+      setReveal(false);
+      setUsers(room.users);
+    });
+  }, []);
 
   const fiboCards = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
 
   return (
     <div className='App'>
-      <h1>{room}</h1>
+      <h2>Room ID: {roomId}</h2>
 
       <button
         disabled={!username}
@@ -58,34 +79,58 @@ function App() {
       <input
         placeholder='Room Number'
         type='text'
-        onChange={e => setRoom(e.target.value)}
+        onChange={e => setRoomId(e.target.value)}
       />
       <button
-        disabled={!room || !username}
+        disabled={!roomId || !username}
         onClick={joinRoom}>
         Join Room
       </button>
+
+      <hr />
+
+      <div>
+        {!reveal ? (
+          <button
+            disabled={!roomId || !username}
+            onClick={revealCards}>
+            Reveal
+          </button>
+        ) : (
+          <button
+            disabled={!roomId || !username}
+            onClick={startNewVoting}>
+            New Game
+          </button>
+        )}
+      </div>
 
       <div className='card-container'>
         {users?.length &&
           users.map(user => (
             <div key={user.clientId}>
-              <div className='card received-card'>{user.card}</div>
+              {reveal ? (
+                <div className='card received-card'>{user.card}</div>
+              ) : (
+                <div className='card back-card'></div>
+              )}
               <div className='user'>{user.username}</div>
             </div>
           ))}
       </div>
 
-      <div className='card-container'>
-        {fiboCards.map(card => (
-          <div
-            onClick={() => handleCardSelect(card)}
-            className='card'
-            key={card}>
-            {card}
-          </div>
-        ))}
-      </div>
+      {!reveal && (
+        <div className='card-container'>
+          {fiboCards.map(card => (
+            <div
+              onClick={() => handleCardSelect(card)}
+              className='card'
+              key={card}>
+              {card}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

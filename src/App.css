@@ -51,7 +51,7 @@
 }
 
 .card {
-  color: #318da7;
+  color: #3993ff;
   font-size: 1.5rem;
   font-weight: 800;
   display: flex;
@@ -59,7 +59,7 @@
   align-items: center;
   height: 6rem;
   width: 3.5rem;
-  border: 2px solid #318da7;
+  border: 2px solid #3993ff;
   border-radius: 10px;
   background-color: #fff;
   margin: 5px 10px;
@@ -69,8 +69,14 @@
 
 .received-card {
   cursor: default;
-  color: #000;
-  border-color: #000;
+}
+
+.back-card {
+  cursor: default;
+  background: linear-gradient(45deg, #3993ff 12%, transparent 0, transparent 88%, #3993ff 0), linear-gradient(135deg, transparent 37%, #1a7bf2 0, #1a7bf2 63%, transparent 0), linear-gradient(45deg, transparent 37%, #3993ff 0, #3993ff 63%, transparent 0), #74b3ff;
+  background-size: 17px 17px;
+  box-shadow: 2px 2px 5px #00000095;
+  border: 1px solid #ededed25;
 }
 
 .user {
