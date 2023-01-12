@@ -7,74 +7,212 @@ const socket = io('ws://localhost:3000');
 type User = {
   clientId: string;
   username: string;
-  card: string | undefined;
+  card: string;
 };
+
+type CardVotes = {
+  card: string;
+  quantity: number;
+};
+
+const fiboCards = [
+  { card: '0', checked: false },
+  { card: '1', checked: false },
+  { card: '2', checked: false },
+  { card: '3', checked: false },
+  { card: '5', checked: false },
+  { card: '8', checked: false },
+  { card: '13', checked: false },
+  { card: '21', checked: false },
+  { card: '34', checked: false },
+  { card: '55', checked: false },
+  { card: '89', checked: false },
+  { card: '?', checked: false },
+  { card: '☕', checked: false }
+];
 
 function App() {
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>();
   const [users, setUsers] = useState<User[]>();
   const [reveal, setReveal] = useState<boolean>(false);
+  const [gameName, setGameName] = useState<string>();
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [cardSelected, setCardSelected] = useState<string>();
+  const [average, setAverage] = useState<number | undefined>();
+  const [cards, setCards] = useState<CardVotes[]>();
+  const [coffee, setCoffee] = useState<boolean>(false);
+  const [clientId, setClientId] = useState<string>('');
+  const [canReveal, setCanReveal] = useState(false);
 
-  const handleCardSelect = (card: number) => {
-    socket.emit('card', { card, username, room: roomId });
+  const handleCardSelect = (card: string) => {
+    if (!roomId) {
+      return;
+    }
+
+    fiboCards.forEach(fibo => (fibo.checked = false));
+    const cardIndex = fiboCards.findIndex(fibo => fibo.card === card);
+
+    if (cardIndex === -1) {
+      return;
+    }
+
+    if (cardSelected === card) {
+      setCanReveal(false);
+      socket.emit('client:card_select', { card: '', roomId, clientId });
+      setCardSelected('');
+      fiboCards[cardIndex].checked = false;
+      return;
+    } else {
+      setCanReveal(true);
+      socket.emit('client:card_select', { card, roomId, clientId });
+      setCardSelected(card);
+      fiboCards[cardIndex].checked = true;
+      return;
+    }
   };
 
   const createRoom = () => {
-    socket.emit('create_room', username);
+    socket.emit('client:create_room', { username, gameName });
+    setGameStarted(true);
   };
 
   const revealCards = () => {
-    socket.emit('reveal_cards', roomId);
+    socket.emit('client:reveal_cards', roomId);
     setReveal(true);
+    setCardSelected('');
+    fiboCards.forEach(fibo => (fibo.checked = false));
   };
 
   const joinRoom = () => {
-    socket.emit('join_room', { roomId, username });
+    if (clientId) {
+      socket.emit('client:join_room', { roomId, username, clientId });
+    } else {
+      socket.emit('client:join_room', { roomId, username });
+    }
   };
 
   const startNewVoting = () => {
-    socket.emit('start_new_voting', roomId);
+    socket.emit('client:start_new_voting', roomId);
     setReveal(false);
+    setCardSelected('');
+    setCards([]);
+    setCoffee(false);
+  };
+
+  const setClientInLocalStorage = (username: string, clientId: string) => {
+    const clientInfo = JSON.stringify({ username, clientId });
+
+    localStorage.setItem('client', clientInfo);
+  };
+
+  const getClientFromLocalStorage = () => {
+    const clientInfo = localStorage.getItem('client');
+
+    if (clientInfo) {
+      const clientInfoParsed = JSON.parse(clientInfo);
+
+      setUsername(clientInfoParsed.username);
+      setClientId(clientInfoParsed.clientId);
+
+      socket.emit('client:client_connected', { username, clientId });
+    }
+  };
+
+  const addUsername = () => {
+    socket.emit('client:add_username', { clientId, username, roomId });
   };
 
   useEffect(() => {
-    socket.on('new_room', newRoom => {
-      setRoomId(newRoom);
+    getClientFromLocalStorage();
+  }, []);
+
+  useEffect(() => {
+    socket.on('server:new_room', ({ roomId, users }) => {
+      setRoomId(roomId);
+      setUsers(users);
     });
 
-    socket.on('users', room => {
-      setUsers(room.users);
-      setReveal(room.reveal);
+    socket.on(
+      'server:user_joined',
+      ({ roomUsers, reveal, gameName, coffeeTime, cardsVotes }) => {
+        setUsers(roomUsers);
+        setReveal(reveal);
+        setGameName(gameName);
+        setGameStarted(true);
+        setCoffee(coffeeTime);
+        setCards(cardsVotes);
+      }
+    );
+
+    socket.on('server:users', ({ roomVoting, reveal }) => {
+      setUsers(roomVoting);
+      setReveal(reveal);
     });
 
-    socket.on('reveal_cards', () => {
+    socket.on('server:reveal_cards', ({ averageVoting, cardsVotes }) => {
+      setCards(cardsVotes);
+      setAverage(averageVoting);
       setReveal(true);
     });
 
-    socket.on('start_new_voting', room => {
+    socket.on('server:start_new_voting', ({ roomUsers }) => {
       setReveal(false);
-      setUsers(room.users);
+      setUsers(roomUsers);
+      setAverage(undefined);
+      setCards([]);
+      setCoffee(false);
+      setCardSelected('');
+      setCanReveal(false);
+      fiboCards.forEach(fibo => (fibo.checked = false));
     });
-  }, []);
 
-  const fiboCards = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+    socket.on('server:coffee', () => {
+      setCoffee(true);
+    });
+
+    socket.on('server:client_id', clientId => {
+      setClientId(clientId);
+      setClientInLocalStorage(username || '', clientId);
+    });
+  }, [username, users]);
 
   return (
     <div className='App'>
-      <h2>Room ID: {roomId}</h2>
+      {gameStarted && <div className='game-name'>{gameName}</div>}
+
+      <h4>Room ID: {roomId}</h4>
+      <h4>Client ID: {clientId}</h4>
+      <h4>User: {username}</h4>
 
       <button
-        disabled={!username}
+        disabled={!username || !gameName}
         onClick={createRoom}>
         Create Room
       </button>
 
       <input
+        placeholder='Game Name'
+        type='text'
+        onChange={e => setGameName(e.target.value)}
+      />
+
+      <hr />
+
+      <input
         placeholder='Username'
         type='text'
         onChange={e => setUsername(e.target.value)}
+        disabled={clientId !== undefined && clientId.length < 0}
       />
+
+      <button
+        disabled={!roomId}
+        onClick={addUsername}>
+        Continue to game
+      </button>
+
+      <hr />
 
       <input
         placeholder='Room Number'
@@ -82,7 +220,7 @@ function App() {
         onChange={e => setRoomId(e.target.value)}
       />
       <button
-        disabled={!roomId || !username}
+        disabled={!roomId}
         onClick={joinRoom}>
         Join Room
       </button>
@@ -92,7 +230,7 @@ function App() {
       <div>
         {!reveal ? (
           <button
-            disabled={!roomId || !username}
+            disabled={!canReveal && !users?.some(user => user.card.length > 0)}
             onClick={revealCards}>
             Reveal
           </button>
@@ -110,9 +248,19 @@ function App() {
           users.map(user => (
             <div key={user.clientId}>
               {reveal ? (
-                <div className='card received-card'>{user.card}</div>
+                <div
+                  className={
+                    user.card
+                      ? 'card-voted received-card'
+                      : 'card-voted card-empty'
+                  }>
+                  {user.card}
+                </div>
               ) : (
-                <div className='card back-card'></div>
+                <div
+                  className={
+                    user.card ? 'card-voted back-card' : 'card-voted card-empty'
+                  }></div>
               )}
               <div className='user'>{user.username}</div>
             </div>
@@ -121,14 +269,46 @@ function App() {
 
       {!reveal && (
         <div className='card-container'>
-          {fiboCards.map(card => (
+          {fiboCards.map(fibo => (
             <div
-              onClick={() => handleCardSelect(card)}
-              className='card'
-              key={card}>
-              {card}
+              onClick={() => handleCardSelect(fibo.card)}
+              className={fibo.checked ? 'card-checked' : 'card'}
+              key={fibo.card}>
+              {fibo.card}
             </div>
           ))}
+        </div>
+      )}
+
+      {reveal && (
+        <div className='card-container'>
+          {cards &&
+            cards.map(card => (
+              <div
+                key={card.card}
+                className='card-vote-container'>
+                <div className='card card-vote'>{card.card}</div>
+                <span className='vote-quantity'>
+                  {card.quantity} {card.quantity > 1 ? 'Votes' : 'Vote'}
+                </span>
+              </div>
+            ))}
+
+          <div>
+            {average !== undefined && average !== null && (
+              <div className='average'>
+                <p>Average:</p>
+                <p className='average-number'>{average}</p>
+              </div>
+            )}
+
+            {coffee && (
+              <div className='coffee'>
+                <p>Coffee time!</p>
+                <span>☕</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
