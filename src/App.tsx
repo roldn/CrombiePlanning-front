@@ -44,6 +44,8 @@ function App() {
   const [coffee, setCoffee] = useState<boolean>(false);
   const [clientId, setClientId] = useState<string>('');
   const [canReveal, setCanReveal] = useState(false);
+  const [allowedReveal, setAllowedReveal] = useState(false);
+  const [allowedNewGame, setAllowedNewGame] = useState(false);
 
   const handleCardSelect = (card: string) => {
     if (!roomId) {
@@ -73,8 +75,14 @@ function App() {
   };
 
   const createRoom = () => {
-    socket.emit('client:create_room', { username, gameName });
+    if (clientId) {
+      socket.emit('client:create_room', { username, gameName, clientId });
+    } else {
+      socket.emit('client:create_room', { username, gameName });
+    }
     setGameStarted(true);
+    setAllowedReveal(true);
+    setAllowedNewGame(true);
   };
 
   const revealCards = () => {
@@ -135,13 +143,14 @@ function App() {
 
     socket.on(
       'server:user_joined',
-      ({ roomUsers, reveal, gameName, coffeeTime, cardsVotes }) => {
+      ({ roomUsers, reveal, gameName, coffeeTime, cardsVotes, average }) => {
         setUsers(roomUsers);
         setReveal(reveal);
         setGameName(gameName);
         setGameStarted(true);
         setCoffee(coffeeTime);
         setCards(cardsVotes);
+        setAverage(average);
       }
     );
 
@@ -230,13 +239,16 @@ function App() {
       <div>
         {!reveal ? (
           <button
-            disabled={!canReveal && !users?.some(user => user.card.length > 0)}
+            disabled={
+              !allowedReveal ||
+              (!canReveal && !users?.some(user => user.card.length > 0))
+            }
             onClick={revealCards}>
             Reveal
           </button>
         ) : (
           <button
-            disabled={!roomId || !username}
+            disabled={!roomId || !allowedNewGame}
             onClick={startNewVoting}>
             New Game
           </button>
