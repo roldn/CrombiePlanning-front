@@ -285,7 +285,7 @@ const Game = () => {
           ))}
       </div>
 
-      {!reveal && (
+      {!reveal && gameStarted && (
         <div className='card-container'>
           {fiboCards.map(fibo => (
             <div
