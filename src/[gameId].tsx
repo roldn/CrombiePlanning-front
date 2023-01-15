@@ -200,17 +200,21 @@ const Game = () => {
       <h4>Client ID: {clientId}</h4>
       <h4>User: {username}</h4>
 
-      <button
-        disabled={!username || !gameName}
-        onClick={createRoom}>
-        Create Room
-      </button>
+      {!roomId && !gameStarted && (
+        <>
+          <button
+            disabled={!username || !gameName}
+            onClick={createRoom}>
+            Create Room
+          </button>
 
-      <input
-        placeholder='Game Name'
-        type='text'
-        onChange={e => setGameName(e.target.value)}
-      />
+          <input
+            placeholder='Game Name'
+            type='text'
+            onChange={e => setGameName(e.target.value)}
+          />
+        </>
+      )}
 
       <hr />
 
