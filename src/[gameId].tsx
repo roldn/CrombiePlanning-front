@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { io } from 'socket.io-client';
+import { useParams } from 'react-router-dom';
 
 const socket = io('ws://localhost:3000');
 
@@ -31,7 +32,7 @@ const fiboCards = [
   { card: '☕', checked: false }
 ];
 
-function App() {
+const Game = () => {
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>();
   const [users, setUsers] = useState<User[]>();
@@ -46,6 +47,7 @@ function App() {
   const [canReveal, setCanReveal] = useState(false);
   const [allowedReveal, setAllowedReveal] = useState(false);
   const [allowedNewGame, setAllowedNewGame] = useState(false);
+  const { roomParamId } = useParams();
 
   const handleCardSelect = (card: string) => {
     if (!roomId) {
@@ -110,7 +112,6 @@ function App() {
 
   const setClientInLocalStorage = (username: string, clientId: string) => {
     const clientInfo = JSON.stringify({ username, clientId });
-
     localStorage.setItem('client', clientInfo);
   };
 
@@ -128,17 +129,22 @@ function App() {
   };
 
   const addUsername = () => {
-    socket.emit('client:add_username', { clientId, username, roomId });
+    socket.emit('client:add_username', { username, roomId });
   };
 
   useEffect(() => {
     getClientFromLocalStorage();
-  }, []);
+    if (roomParamId) {
+      setRoomId(roomParamId);
+      joinRoom();
+    }
+  }, [roomId]);
 
   useEffect(() => {
     socket.on('server:new_room', ({ roomId, users }) => {
       setRoomId(roomId);
       setUsers(users);
+      window.history.replaceState(null, `Game ${gameName}`, `${roomId}`);
     });
 
     socket.on(
@@ -221,7 +227,7 @@ function App() {
         Continue to game
       </button>
 
-      <hr />
+      {/* <hr />
 
       <input
         placeholder='Room Number'
@@ -232,7 +238,7 @@ function App() {
         disabled={!roomId}
         onClick={joinRoom}>
         Join Room
-      </button>
+      </button> */}
 
       <hr />
 
@@ -299,7 +305,7 @@ function App() {
               <div
                 key={card.card}
                 className='card-vote-container'>
-                <div className='card card-vote'>{card.card}</div>
+                <div className='card-vote'>{card.card}</div>
                 <span className='vote-quantity'>
                   {card.quantity} {card.quantity > 1 ? 'Votes' : 'Vote'}
                 </span>
@@ -325,6 +331,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
-export default App;
+export default Game;
