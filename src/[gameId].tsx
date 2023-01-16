@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
+import useCreateRoom from './helpers/useCreateRoom';
+import useCards from './helpers/useCards';
 
 const socket = io('ws://localhost:3000');
 
@@ -16,83 +18,35 @@ type CardVotes = {
   quantity: number;
 };
 
-const fiboCards = [
-  { card: '0', checked: false },
-  { card: '1', checked: false },
-  { card: '2', checked: false },
-  { card: '3', checked: false },
-  { card: '5', checked: false },
-  { card: '8', checked: false },
-  { card: '13', checked: false },
-  { card: '21', checked: false },
-  { card: '34', checked: false },
-  { card: '55', checked: false },
-  { card: '89', checked: false },
-  { card: '?', checked: false },
-  { card: '☕', checked: false }
-];
-
 const Game = () => {
-  const [roomId, setRoomId] = useState<string>();
-  const [username, setUsername] = useState<string>();
+  const [roomId, setRoomId] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [users, setUsers] = useState<User[]>();
-  const [reveal, setReveal] = useState<boolean>(false);
-  const [gameName, setGameName] = useState<string>();
-  const [gameStarted, setGameStarted] = useState<boolean>(false);
-  const [cardSelected, setCardSelected] = useState<string>();
   const [average, setAverage] = useState<number | undefined>();
   const [cards, setCards] = useState<CardVotes[]>();
   const [coffee, setCoffee] = useState<boolean>(false);
   const [clientId, setClientId] = useState<string>('');
-  const [canReveal, setCanReveal] = useState(false);
-  const [allowedReveal, setAllowedReveal] = useState(false);
-  const [allowedNewGame, setAllowedNewGame] = useState(false);
   const { roomParamId } = useParams();
 
-  const handleCardSelect = (card: string) => {
-    if (!roomId) {
-      return;
-    }
+  const {
+    gameStarted,
+    allowedReveal,
+    allowedNewGame,
+    setGameStarted,
+    createRoom,
+    gameName,
+    setGameName
+  } = useCreateRoom();
 
-    fiboCards.forEach(fibo => (fibo.checked = false));
-    const cardIndex = fiboCards.findIndex(fibo => fibo.card === card);
-
-    if (cardIndex === -1) {
-      return;
-    }
-
-    if (cardSelected === card) {
-      setCanReveal(false);
-      socket.emit('client:card_select', { card: '', roomId, clientId });
-      setCardSelected('');
-      fiboCards[cardIndex].checked = false;
-      return;
-    } else {
-      setCanReveal(true);
-      socket.emit('client:card_select', { card, roomId, clientId });
-      setCardSelected(card);
-      fiboCards[cardIndex].checked = true;
-      return;
-    }
-  };
-
-  const createRoom = () => {
-    if (clientId) {
-      socket.emit('client:create_room', { username, gameName, clientId });
-    } else {
-      socket.emit('client:create_room', { username, gameName });
-    }
-    setGameStarted(true);
-    setAllowedReveal(true);
-    setAllowedNewGame(true);
-  };
-
-  const revealCards = () => {
-    socket.emit('client:reveal_cards', roomId);
-    setReveal(true);
-    setCardSelected('');
-    fiboCards.forEach(fibo => (fibo.checked = false));
-  };
+  const {
+    reveal,
+    setReveal,
+    revealCards,
+    canReveal,
+    handleCardSelect,
+    setCanReveal,
+    fiboCards
+  } = useCards(socket);
 
   const joinRoom = () => {
     if (clientId) {
@@ -105,7 +59,6 @@ const Game = () => {
   const startNewVoting = () => {
     socket.emit('client:start_new_voting', roomId);
     setReveal(false);
-    setCardSelected('');
     setCards([]);
     setCoffee(false);
   };
@@ -177,7 +130,6 @@ const Game = () => {
       setAverage(undefined);
       setCards([]);
       setCoffee(false);
-      setCardSelected('');
       setCanReveal(false);
       fiboCards.forEach(fibo => (fibo.checked = false));
     });
@@ -204,7 +156,7 @@ const Game = () => {
         <>
           <button
             disabled={!username || !gameName}
-            onClick={createRoom}>
+            onClick={() => createRoom(socket, username, gameName, clientId)}>
             Create Room
           </button>
 
@@ -231,19 +183,6 @@ const Game = () => {
         Continue to game
       </button>
 
-      {/* <hr />
-
-      <input
-        placeholder='Room Number'
-        type='text'
-        onChange={e => setRoomId(e.target.value)}
-      />
-      <button
-        disabled={!roomId}
-        onClick={joinRoom}>
-        Join Room
-      </button> */}
-
       <hr />
 
       <div>
@@ -253,7 +192,7 @@ const Game = () => {
               !allowedReveal ||
               (!canReveal && !users?.some(user => user.card.length > 0))
             }
-            onClick={revealCards}>
+            onClick={() => revealCards(roomId)}>
             Reveal
           </button>
         ) : (
@@ -293,7 +232,7 @@ const Game = () => {
         <div className='card-container'>
           {fiboCards.map(fibo => (
             <div
-              onClick={() => handleCardSelect(fibo.card)}
+              onClick={() => handleCardSelect(fibo.card, roomId, clientId)}
               className={fibo.checked ? 'card-checked' : 'card'}
               key={fibo.card}>
               {fibo.card}
