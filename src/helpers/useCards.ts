@@ -1,10 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
-
-type FiboCards = {
-  card: string;
-  checked: boolean;
-};
+import { CardVotes } from '../types/CardVotes';
+import { FiboCards } from '../types/FiboCards';
 
 const fiboCards: FiboCards[] = [
   { card: '0', checked: false },
@@ -25,6 +22,8 @@ const fiboCards: FiboCards[] = [
 const useCards = (socket: Socket) => {
   const [reveal, setReveal] = useState<boolean>(false);
   const [canReveal, setCanReveal] = useState(false);
+  const [cardsVotes, setCardsVotes] = useState<CardVotes[]>();
+  const [coffee, setCoffee] = useState<boolean>(false);
 
   const revealCards = useCallback((roomId: string) => {
     socket.emit('client:reveal_cards', roomId);
@@ -58,6 +57,19 @@ const useCards = (socket: Socket) => {
     []
   );
 
+  const startNewVoting = useCallback((roomId: string) => {
+    socket.emit('client:start_new_voting', roomId);
+    setReveal(false);
+    setCardsVotes([]);
+    setCoffee(false);
+  }, []);
+
+  useEffect(() => {
+    socket.on('server:coffee', () => {
+      setCoffee(true);
+    });
+  }, []);
+
   return {
     reveal,
     setReveal,
@@ -65,7 +77,12 @@ const useCards = (socket: Socket) => {
     handleCardSelect,
     canReveal,
     setCanReveal,
-    fiboCards
+    fiboCards,
+    coffee,
+    setCoffee,
+    cardsVotes,
+    setCardsVotes,
+    startNewVoting
   };
 };
 
