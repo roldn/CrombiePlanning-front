@@ -4,6 +4,7 @@ import useRoom from './helpers/useRoom';
 import Cards from './components/Card';
 import Votes from './components/Votes';
 import { StyledButton, StyledTextField } from './styles';
+import { Typography } from '@mui/material';
 
 const socket = io('ws://localhost:3000');
 
@@ -13,15 +14,36 @@ const Game = () => {
   return (
     <div className='App'>
       {room.gameStarted && <div className='game-name'>{room.gameName}</div>}
+      {room.gameStarted && <h4>User: {user.username}</h4>}
 
-      <h4>Room ID: {room.roomId}</h4>
-      <h4>User: {user.username}</h4>
+      {/* <h4>Room ID: {room.roomId}</h4> */}
 
       {!room.roomId && !room.gameStarted && (
         <>
+          <Typography
+            sx={{
+              fontFamily:
+                '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif',
+              fontSize: 19.7,
+              marginBottom: 4,
+              marginTop: -15
+            }}>
+            Choose a name and a voting system for your game.
+          </Typography>
           <StyledTextField
-            variant='standard'
-            placeholder='Game Name'
+            size='small'
+            inputProps={{
+              style: {
+                fontSize: 18,
+                marginLeft: 5,
+                height: 35
+              }
+            }}
+            InputLabelProps={{
+              style: {}
+            }}
+            variant='outlined'
+            label="Game's Name"
             type='text'
             onChange={e => room.setGameName(e.target.value)}
           />
