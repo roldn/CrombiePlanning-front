@@ -37,15 +37,15 @@ const Game = () => {
         </>
       )}
 
-      <hr />
-
-      {room.gameStarted && (
+      {!room.gameStarted && room.roomId && (
         <>
           <StyledTextField
             variant='standard'
             placeholder='Username'
             type='text'
-            onChange={e => user.setUsername(e.target.value)}
+            onChange={e => {
+              user.setUsername(e.target.value);
+            }}
             disabled={user.clientId !== undefined && user.clientId.length < 0}
           />
 
@@ -53,13 +53,11 @@ const Game = () => {
             variant='contained'
             color='primary'
             disabled={!room.roomId}
-            onClick={() => user.changeUsername(room.roomId)}>
+            onClick={room.handleChooseUsername}>
             Continue to game
           </StyledButton>
         </>
       )}
-
-      <hr />
 
       {room.gameStarted && (
         <div>
@@ -67,7 +65,12 @@ const Game = () => {
             <StyledButton
               variant='contained'
               color='primary'
-              disabled={!user.allowedReveal || !user.canReveal}
+              disabled={
+                !user.allowedReveal ||
+                (!user.canReveal &&
+                  room.users &&
+                  !room.users.some(user => user.card.length > 0))
+              }
               onClick={() => user.revealCards(room.roomId)}>
               Reveal
             </StyledButton>
@@ -83,12 +86,14 @@ const Game = () => {
         </div>
       )}
 
-      <Votes
-        users={room.users}
-        reveal={room.reveal}
-      />
+      {room.gameStarted && (
+        <Votes
+          users={room.users}
+          reveal={room.reveal}
+        />
+      )}
 
-      {!room.reveal && room.gameStarted && (
+      {!room.reveal && room.gameStarted && room.gameName && (
         <Cards
           roomId={room.roomId}
           clientId={user.clientId}

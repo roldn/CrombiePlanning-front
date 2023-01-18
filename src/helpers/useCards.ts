@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import { CardVotes } from '../types/CardVotes';
 import { FiboCards } from '../types/FiboCards';
 
-const fiboCards: FiboCards[] = [
+const fiboCardsArray: FiboCards[] = [
   { card: '0', checked: false },
   { card: '1', checked: false },
   { card: '2', checked: false },
@@ -24,6 +24,7 @@ const useCards = (socket: Socket) => {
   const [canReveal, setCanReveal] = useState(false);
   const [cardsVotes, setCardsVotes] = useState<CardVotes[]>();
   const [coffee, setCoffee] = useState<boolean>(false);
+  const [fiboCards, setFiboCards] = useState<FiboCards[]>(fiboCardsArray);
 
   const revealCards = useCallback((roomId: string) => {
     socket.emit('client:reveal_cards', roomId);
@@ -67,6 +68,22 @@ const useCards = (socket: Socket) => {
   useEffect(() => {
     socket.on('server:coffee', () => {
       setCoffee(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    socket.on('server:selected_card', card => {
+      const cardIndex = fiboCards.findIndex(fibo => fibo.card === card);
+
+      if (cardIndex === -1) {
+        return;
+      }
+
+      const cardsArray = fiboCards.slice();
+
+      cardsArray[cardIndex].checked = true;
+
+      setFiboCards(cardsArray);
     });
   }, []);
 

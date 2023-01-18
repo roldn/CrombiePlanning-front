@@ -18,6 +18,11 @@ const useCreateRoom = (socket: Socket) => {
   const user = useUser(socket);
   const cards = useCards(socket);
 
+  const handleChooseUsername = useCallback(() => {
+    user.changeUsername(roomId);
+    setGameStarted(true);
+  }, [user.username]);
+
   const createRoom = useCallback(
     (username: string, gameName: string, clientId: string) => {
       if (clientId) {
@@ -25,11 +30,13 @@ const useCreateRoom = (socket: Socket) => {
       } else {
         socket.emit('client:create_room', { username, gameName });
       }
-      setGameStarted(true);
+      if (username) {
+        setGameStarted(true);
+      }
       setAllowedReveal(true);
       setAllowedNewGame(true);
     },
-    []
+    [user.username]
   );
 
   const joinRoom = useCallback(
@@ -39,8 +46,12 @@ const useCreateRoom = (socket: Socket) => {
       } else {
         socket.emit('client:join_room', { roomId, username });
       }
+
+      if (user.username) {
+        setGameStarted(true);
+      }
     },
-    []
+    [user.username]
   );
 
   useEffect(() => {
@@ -51,24 +62,40 @@ const useCreateRoom = (socket: Socket) => {
   }, [roomId]);
 
   useEffect(() => {
+    socket.on(
+      'server:user_joined',
+      ({
+        roomUsers,
+        reveal,
+        gameName,
+        coffeeTime,
+        cardsVotes,
+        average,
+        gameOptions
+      }) => {
+        setUsers(roomUsers);
+        cards.setReveal(reveal);
+        setGameName(gameName);
+        cards.setCoffee(coffeeTime);
+        cards.setCardsVotes(cardsVotes);
+        setAverage(average);
+
+        const allowedManageGame = gameOptions.allowedReveal.some(
+          (u: User) => u.clientId === user.clientId
+        );
+
+        setAllowedNewGame(allowedManageGame);
+        setAllowedReveal(allowedManageGame);
+      }
+    );
+  }, [user.clientId]);
+
+  useEffect(() => {
     socket.on('server:new_room', ({ roomId, users }) => {
       setRoomId(roomId);
       setUsers(users);
       window.history.replaceState(null, `Game ${gameName}`, `${roomId}`);
     });
-
-    socket.on(
-      'server:user_joined',
-      ({ roomUsers, reveal, gameName, coffeeTime, cardsVotes, average }) => {
-        setUsers(roomUsers);
-        cards.setReveal(reveal);
-        setGameName(gameName);
-        setGameStarted(true);
-        cards.setCoffee(coffeeTime);
-        cards.setCardsVotes(cardsVotes);
-        setAverage(average);
-      }
-    );
 
     socket.on('server:users', ({ roomVoting, reveal }) => {
       setUsers(roomVoting);
@@ -104,7 +131,8 @@ const useCreateRoom = (socket: Socket) => {
       gameName,
       users,
       average,
-      coffee: cards.coffee
+      coffee: cards.coffee,
+      handleChooseUsername
     },
     user: {
       username: user.username,
