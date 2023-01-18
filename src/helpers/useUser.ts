@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 
 const useUser = (socket: Socket) => {
   const [clientId, setClientId] = useState<string>('');
-  const [username, setUsername] = useState<string>('');
+  const [username, setUsername] = useState<string | undefined>(undefined);
 
   const setClientInLocalStorage = useCallback(
     (username: string, clientId: string) => {
@@ -36,7 +36,7 @@ const useUser = (socket: Socket) => {
   useEffect(() => {
     socket.on('server:client_id', clientId => {
       setClientId(clientId);
-      setClientInLocalStorage(username, clientId);
+      setClientInLocalStorage(username || '', clientId);
     });
   }, [username]);
 

@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import useRoom from './helpers/useRoom';
 import Cards from './components/Card';
 import Votes from './components/Votes';
+import { StyledButton, StyledTextField } from './styles';
 
 const socket = io('ws://localhost:3000');
 
@@ -14,63 +15,73 @@ const Game = () => {
       {room.gameStarted && <div className='game-name'>{room.gameName}</div>}
 
       <h4>Room ID: {room.roomId}</h4>
-      <h4>Client ID: {user.clientId}</h4>
       <h4>User: {user.username}</h4>
 
       {!room.roomId && !room.gameStarted && (
         <>
-          <button
-            disabled={!user.username || !room.gameName}
-            onClick={() =>
-              room.createRoom(user.username, room.gameName, user.clientId)
-            }>
-            Create Room
-          </button>
-
-          <input
+          <StyledTextField
+            variant='standard'
             placeholder='Game Name'
             type='text'
             onChange={e => room.setGameName(e.target.value)}
           />
+          <StyledButton
+            variant='contained'
+            color='primary'
+            disabled={!room.gameName}
+            onClick={() =>
+              room.createRoom(user.username || '', room.gameName, user.clientId)
+            }>
+            Create Room
+          </StyledButton>
         </>
       )}
 
       <hr />
 
-      <input
-        placeholder='Username'
-        type='text'
-        onChange={e => user.setUsername(e.target.value)}
-        disabled={user.clientId !== undefined && user.clientId.length < 0}
-      />
+      {room.gameStarted && (
+        <>
+          <StyledTextField
+            variant='standard'
+            placeholder='Username'
+            type='text'
+            onChange={e => user.setUsername(e.target.value)}
+            disabled={user.clientId !== undefined && user.clientId.length < 0}
+          />
 
-      <button
-        disabled={!room.roomId}
-        onClick={() => user.changeUsername(room.roomId)}>
-        Continue to game
-      </button>
+          <StyledButton
+            variant='contained'
+            color='primary'
+            disabled={!room.roomId}
+            onClick={() => user.changeUsername(room.roomId)}>
+            Continue to game
+          </StyledButton>
+        </>
+      )}
 
       <hr />
 
-      <div>
-        {!room.reveal ? (
-          <button
-            disabled={
-              !user.allowedReveal ||
-              (!user.canReveal &&
-                !room.users?.some(user => user.card.length > 0))
-            }
-            onClick={() => user.revealCards(room.roomId)}>
-            Reveal
-          </button>
-        ) : (
-          <button
-            disabled={!room.roomId || !user.allowedNewGame}
-            onClick={() => user.startNewVoting(room.roomId)}>
-            New Game
-          </button>
-        )}
-      </div>
+      {room.gameStarted && (
+        <div>
+          {!room.reveal ? (
+            <StyledButton
+              variant='contained'
+              color='primary'
+              disabled={!user.allowedReveal || !user.canReveal}
+              onClick={() => user.revealCards(room.roomId)}>
+              Reveal
+            </StyledButton>
+          ) : (
+            <StyledButton
+              variant='contained'
+              color='primary'
+              disabled={!room.roomId || !user.allowedNewGame}
+              onClick={() => user.startNewVoting(room.roomId)}>
+              New Game
+            </StyledButton>
+          )}
+        </div>
+      )}
 
       <Votes
         users={room.users}

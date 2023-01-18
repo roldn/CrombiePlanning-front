@@ -46,7 +46,7 @@ const useCreateRoom = (socket: Socket) => {
   useEffect(() => {
     if (roomParamId) {
       setRoomId(roomParamId);
-      joinRoom(roomId, user.username, user.clientId);
+      joinRoom(roomId, user.username || '', user.clientId);
     }
   }, [roomId]);
 
