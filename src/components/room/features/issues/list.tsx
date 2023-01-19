@@ -1,19 +1,27 @@
-import useNotes from "./useNotes";
-import Item from "./item";
+import Item from './item';
 
-export const List = (() =>  {
-
-    const { notes } = useNotes();
-    
-    return (
-        <div>
-            {notes && notes.map((note:Note) => (
-            <Item
-             key={note.id}
-             note={note}
-             />
-            ))}
-        </div>
-    );
+interface ListItemsProps {
+  notes: Note[];
+  handleDelete: RemoveNote;
+  handleEdit: EditNote;
 }
-)
+
+export const List: React.FC<ListItemsProps> = ({
+  notes,
+  handleDelete,
+  handleEdit
+}) => {
+  return (
+    <div>
+      {notes &&
+        notes.map((note: Note) => (
+          <Item
+            handleDelete={handleDelete}
+            handleEdit={handleEdit}
+            key={note.id}
+            note={note}
+          />
+        ))}
+    </div>
+  );
+};

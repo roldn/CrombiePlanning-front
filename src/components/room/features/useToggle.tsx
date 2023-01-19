@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-const useToggle = ():any => {
-    const [open, setOpen] = useState<boolean>(false);
+const useToggle = () => {
+  const [open, setOpen] = useState<boolean>(false);
 
-    const openDrawer = () => {setOpen(true);};
-    const closeDrawer = () => {setOpen(false);};
+  const toggleDrawer = (value: boolean | null = null) => {
+    if (value === null) {
+      setOpen(!open);
+    } else {
+      setOpen(value);
+    }
+  };
 
-    return ({open, openDrawer, closeDrawer})
-}
- 
+  return { open, toggleDrawer };
+};
+
 export default useToggle;

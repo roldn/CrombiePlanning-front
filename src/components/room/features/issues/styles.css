@@ -10,7 +10,7 @@ form {
     backdrop-filter: blur(10px);
 }
 
-h6{
+h6 {
     line-break: anywhere;
 }
 
@@ -30,5 +30,4 @@ input:focus {
     border-radius: 3px;
     align-self: right;
     outline: none;
-  }
-
+}
