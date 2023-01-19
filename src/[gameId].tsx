@@ -5,6 +5,7 @@ import Cards from './components/Card';
 import Votes from './components/Votes';
 import { StyledButton, StyledTextField } from './styles';
 import { Box, Typography } from '@mui/material';
+import Board from './components/Board';
 
 const socket = io('ws://localhost:3000');
 
@@ -79,52 +80,16 @@ const Game = () => {
         </>
       )}
 
-      {room.gameStarted && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: '#d7e9ff',
-            width: 330,
-            height: 150,
-            borderRadius: '25px',
-            margin: '0 auto'
-          }}>
-          {!room.reveal &&
-          room.users &&
-          !room.users.some(user => user.card.length > 0) ? (
-            <Typography sx={{ fontSize: 18 }}>Pick your cards!</Typography>
-          ) : !room.reveal && user.allowedReveal && user.canReveal ? (
-            <StyledButton
-              sx={{
-                width: 160,
-                fontSize: 20
-              }}
-              variant='contained'
-              color='primary'
-              onClick={() => user.revealCards(room.roomId)}>
-              Reveal cards
-            </StyledButton>
-          ) : !room.reveal && !user.allowedReveal ? (
-            <Typography sx={{ fontSize: 18 }}>Voting in progress</Typography>
-          ) : room.reveal && !user.allowedReveal ? (
-            <Typography sx={{ fontSize: 18 }}>Voting finished</Typography>
-          ) : (
-            <StyledButton
-              sx={{
-                width: 160,
-                fontSize: 19
-              }}
-              variant='contained'
-              color='primary'
-              disabled={!room.roomId || !user.allowedNewGame}
-              onClick={() => user.startNewVoting(room.roomId)}>
-              New Game
-            </StyledButton>
-          )}
-        </Box>
-      )}
+      <Board
+        users={room.users}
+        roomId={room.roomId}
+        canReveal={user.canReveal}
+        allowedReveal={user.allowedReveal}
+        reveal={room.reveal}
+        gameStarted={room.gameStarted}
+        revealCards={user.revealCards}
+        startNewVoting={user.startNewVoting}
+      />
 
       {room.gameStarted && (
         <Votes

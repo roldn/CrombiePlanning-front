@@ -7,7 +7,7 @@ type Votes = {
 
 const Votes: React.FC<Votes> = ({ users, reveal }) => {
   return (
-    <div className='card-container'>
+    <div className='card-voting-container'>
       {users?.length &&
         users.map(user => (
           <div key={user.clientId}>

@@ -14,6 +14,19 @@
   margin-top: 25px;
   align-items: center;
   user-select: none;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  bottom: 1%;
+}
+
+.card-voting-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+  align-items: center;
+  user-select: none;
+  flex-direction: row;
 }
 
 .card-voted {
@@ -158,7 +171,7 @@
 
 .average {
   font-size: 1.5rem;
-  margin: 0 4rem 0;
+  margin: 0 0 0 2rem;
   color: #a8aeb2;
 }
 
