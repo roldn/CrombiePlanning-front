@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { User } from '../types/User';
 import useCards from './useCards';
+import useTimer from './useTimer';
 import useUser from './useUser';
 
 const useCreateRoom = (socket: Socket) => {
@@ -14,6 +15,8 @@ const useCreateRoom = (socket: Socket) => {
   const [users, setUsers] = useState<User[]>();
   const [average, setAverage] = useState<number | undefined>();
   const { roomParamId } = useParams();
+
+  const { time, countdown } = useTimer();
 
   const user = useUser(socket);
   const cards = useCards(socket);
@@ -74,7 +77,7 @@ const useCreateRoom = (socket: Socket) => {
         gameOptions
       }) => {
         setUsers(roomUsers);
-        cards.setReveal(reveal);
+        cards.setRevealing(reveal);
         setGameName(gameName);
         cards.setCoffee(coffeeTime);
         cards.setCardsVotes(cardsVotes);
@@ -99,17 +102,18 @@ const useCreateRoom = (socket: Socket) => {
 
     socket.on('server:users', ({ roomVoting, reveal }) => {
       setUsers(roomVoting);
-      cards.setReveal(reveal);
+      cards.setRevealing(reveal);
     });
 
     socket.on('server:reveal_cards', ({ averageVoting, cardsVotes }) => {
       cards.setCardsVotes(cardsVotes);
       setAverage(averageVoting);
-      cards.setReveal(true);
+      cards.setRevealing(true);
+      countdown();
     });
 
     socket.on('server:start_new_voting', ({ roomUsers }) => {
-      cards.setReveal(false);
+      cards.setRevealing(false);
       setUsers(roomUsers);
       setAverage(undefined);
       cards.setCardsVotes([]);
@@ -127,12 +131,13 @@ const useCreateRoom = (socket: Socket) => {
       fiboCards: cards.fiboCards,
       setGameName,
       gameStarted,
-      reveal: cards.reveal,
+      revealing: cards.revealing,
       gameName,
       users,
       average,
       coffee: cards.coffee,
-      handleChooseUsername
+      handleChooseUsername,
+      revealingTime: time
     },
     user: {
       username: user.username,

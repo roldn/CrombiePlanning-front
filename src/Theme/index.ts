@@ -10,6 +10,9 @@ export const appTheme = createTheme({
     },
     secondary: {
       main: pink[500]
+    },
+    text: {
+      secondary: blue[500]
     }
   },
   spacing: 10,

@@ -20,7 +20,7 @@ const fiboCardsArray: FiboCards[] = [
 ];
 
 const useCards = (socket: Socket) => {
-  const [reveal, setReveal] = useState<boolean>(false);
+  const [revealing, setRevealing] = useState<boolean>(false);
   const [canReveal, setCanReveal] = useState(false);
   const [cardsVotes, setCardsVotes] = useState<CardVotes[]>();
   const [coffee, setCoffee] = useState<boolean>(false);
@@ -28,8 +28,8 @@ const useCards = (socket: Socket) => {
 
   const revealCards = useCallback((roomId: string) => {
     socket.emit('client:reveal_cards', roomId);
-    setReveal(true);
-    fiboCards.forEach(fibo => (fibo.checked = false));
+    // setRevealing(true);
+    // fiboCards.forEach(fibo => (fibo.checked = false));
   }, []);
 
   const handleCardSelect = useCallback(
@@ -60,7 +60,7 @@ const useCards = (socket: Socket) => {
 
   const startNewVoting = useCallback((roomId: string) => {
     socket.emit('client:start_new_voting', roomId);
-    setReveal(false);
+    setRevealing(false);
     setCardsVotes([]);
     setCoffee(false);
   }, []);
@@ -88,8 +88,8 @@ const useCards = (socket: Socket) => {
   }, []);
 
   return {
-    reveal,
-    setReveal,
+    revealing: revealing,
+    setRevealing,
     revealCards,
     handleCardSelect,
     canReveal,

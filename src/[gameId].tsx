@@ -4,7 +4,7 @@ import useRoom from './helpers/useRoom';
 import Cards from './components/Card';
 import Votes from './components/Votes';
 import { StyledButton, StyledTextField } from './styles';
-import { Box, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import Board from './components/Board';
 
 const socket = io('ws://localhost:3000');
@@ -80,25 +80,26 @@ const Game = () => {
         </>
       )}
 
-      <Board
-        users={room.users}
-        roomId={room.roomId}
-        canReveal={user.canReveal}
-        allowedReveal={user.allowedReveal}
-        reveal={room.reveal}
-        gameStarted={room.gameStarted}
-        revealCards={user.revealCards}
-        startNewVoting={user.startNewVoting}
-      />
+      {room.gameStarted && (
+        <Board
+          users={room.users}
+          roomId={room.roomId}
+          allowedReveal={user.allowedReveal}
+          revealing={room.revealing}
+          revealCards={user.revealCards}
+          startNewVoting={user.startNewVoting}
+          revealingTime={room.revealingTime}
+        />
+      )}
 
       {room.gameStarted && (
         <Votes
           users={room.users}
-          reveal={room.reveal}
+          reveal={room.revealing && room.revealingTime <= 0}
         />
       )}
 
-      {!room.reveal && room.gameStarted && room.gameName && (
+      {!room.revealing && room.gameStarted && room.gameName && (
         <Cards
           roomId={room.roomId}
           clientId={user.clientId}
@@ -107,7 +108,7 @@ const Game = () => {
         />
       )}
 
-      {room.reveal && (
+      {room.revealing && room.revealingTime <= 0 && (
         <div className='card-container'>
           {room.cards &&
             room.cards.map(card => (
