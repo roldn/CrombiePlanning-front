@@ -4,7 +4,7 @@ import useRoom from './helpers/useRoom';
 import Cards from './components/Card';
 import Votes from './components/Votes';
 import { StyledButton, StyledTextField } from './styles';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 const socket = io('ws://localhost:3000');
 
@@ -14,7 +14,7 @@ const Game = () => {
   return (
     <div className='App'>
       {room.gameStarted && <div className='game-name'>{room.gameName}</div>}
-      {room.gameStarted && <h4>User: {user.username}</h4>}
+      {room.gameStarted && <div className='game-username'>{user.username}</div>}
 
       {/* <h4>Room ID: {room.roomId}</h4> */}
 
@@ -22,13 +22,15 @@ const Game = () => {
         <>
           <Typography
             sx={{
-              fontSize: 19.7,
+              fontSize: 21,
               marginBottom: 4,
-              marginTop: -15
+              marginTop: -15,
+              fontWeight: 600
             }}>
             Choose a name and a voting system for your game.
           </Typography>
           <StyledTextField
+            autoComplete='off'
             variant='outlined'
             label="Game's name"
             onChange={e => room.setGameName(e.target.value)}
@@ -48,9 +50,18 @@ const Game = () => {
 
       {!room.gameStarted && room.roomId && (
         <>
+          <Typography
+            sx={{
+              fontSize: 21,
+              marginBottom: 4,
+              marginTop: -15,
+              fontWeight: 600
+            }}>
+            Choose your display name
+          </Typography>
           <StyledTextField
             variant='outlined'
-            placeholder='Username'
+            label='Your display name'
             type='text'
             onChange={e => {
               user.setUsername(e.target.value);
@@ -61,7 +72,7 @@ const Game = () => {
           <StyledButton
             variant='contained'
             color='primary'
-            disabled={!room.roomId}
+            disabled={!room.roomId || !user.username}
             onClick={room.handleChooseUsername}>
             Continue to game
           </StyledButton>
@@ -69,22 +80,42 @@ const Game = () => {
       )}
 
       {room.gameStarted && (
-        <div>
-          {!room.reveal ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#d7e9ff',
+            width: 330,
+            height: 150,
+            borderRadius: '25px',
+            margin: '0 auto'
+          }}>
+          {!room.reveal &&
+          room.users &&
+          !room.users.some(user => user.card.length > 0) ? (
+            <Typography sx={{ fontSize: 18 }}>Pick your cards!</Typography>
+          ) : !room.reveal && user.allowedReveal && user.canReveal ? (
             <StyledButton
+              sx={{
+                width: 160,
+                fontSize: 20
+              }}
               variant='contained'
               color='primary'
-              disabled={
-                !user.allowedReveal ||
-                (!user.canReveal &&
-                  room.users &&
-                  !room.users.some(user => user.card.length > 0))
-              }
               onClick={() => user.revealCards(room.roomId)}>
-              Reveal
+              Reveal cards
             </StyledButton>
+          ) : !room.reveal && !user.allowedReveal ? (
+            <Typography sx={{ fontSize: 18 }}>Voting in progress</Typography>
+          ) : room.reveal && !user.allowedReveal ? (
+            <Typography sx={{ fontSize: 18 }}>Voting finished</Typography>
           ) : (
             <StyledButton
+              sx={{
+                width: 160,
+                fontSize: 19
+              }}
               variant='contained'
               color='primary'
               disabled={!room.roomId || !user.allowedNewGame}
@@ -92,7 +123,7 @@ const Game = () => {
               New Game
             </StyledButton>
           )}
-        </div>
+        </Box>
       )}
 
       {room.gameStarted && (

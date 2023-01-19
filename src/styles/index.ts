@@ -6,7 +6,7 @@ export const StyledButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(4),
   marginBottom: theme.spacing(4),
   width: 640,
-  padding: 10,
+  padding: 6,
   borderRadius: '8px',
   marginLeft: 'auto',
   marginRight: 'auto',
@@ -20,8 +20,8 @@ export const StyledTextField = styled(TextField)(({ theme }) => ({
     padding: '0 0.8rem',
     fontWeight: 500,
     color: '#1a2935 !important',
-    top: '-5%',
-    left: '-1.8%'
+    top: '-1px',
+    left: '-11px'
   },
   '& .MuiOutlinedInput-root': {
     '& fieldset': {

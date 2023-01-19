@@ -138,6 +138,18 @@
   user-select: none;
 }
 
+.game-username {
+  font-size: 1.6rem;
+  font-weight: 700;
+  position: absolute;
+  right: 10%;
+  top: 5%;
+  padding: 0.8rem;
+  border-radius: 5px;
+  transition: all 0.3s;
+  user-select: none;
+}
+
 .game-name:hover {
   transition: all 0.3s;
   background-color: #f1f1f1;
