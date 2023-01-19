@@ -22,8 +22,6 @@ const Game = () => {
         <>
           <Typography
             sx={{
-              fontFamily:
-                '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif',
               fontSize: 19.7,
               marginBottom: 4,
               marginTop: -15
@@ -31,30 +29,19 @@ const Game = () => {
             Choose a name and a voting system for your game.
           </Typography>
           <StyledTextField
-            size='small'
-            inputProps={{
-              style: {
-                fontSize: 18,
-                marginLeft: 5,
-                height: 35
-              }
-            }}
-            InputLabelProps={{
-              style: {}
-            }}
             variant='outlined'
-            label="Game's Name"
-            type='text'
+            label="Game's name"
             onChange={e => room.setGameName(e.target.value)}
           />
           <StyledButton
+            autoCapitalize='none'
             variant='contained'
             color='primary'
             disabled={!room.gameName}
             onClick={() =>
               room.createRoom(user.username || '', room.gameName, user.clientId)
             }>
-            Create Room
+            Create game
           </StyledButton>
         </>
       )}
@@ -62,7 +49,7 @@ const Game = () => {
       {!room.gameStarted && room.roomId && (
         <>
           <StyledTextField
-            variant='standard'
+            variant='outlined'
             placeholder='Username'
             type='text'
             onChange={e => {

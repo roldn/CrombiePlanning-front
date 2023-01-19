@@ -12,5 +12,9 @@ export const appTheme = createTheme({
       main: pink[500]
     }
   },
-  spacing: 10
+  spacing: 10,
+  typography: {
+    fontFamily:
+      '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif'
+  }
 });
