@@ -79,7 +79,10 @@ const useCreateRoom = (socket: Socket) => {
         cards.setCoffee(coffeeTime);
         cards.setCardsVotes(cardsVotes);
         setAverage(average);
-        setGameStarted(true);
+
+        if (user.username) {
+          setGameStarted(true);
+        }
 
         const allowedManageGame = gameOptions.allowedReveal.some(
           (u: User) => u.clientId === user.clientId

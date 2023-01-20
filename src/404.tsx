@@ -9,7 +9,7 @@ const NotFound = () => {
         sx={{
           fontSize: 25
         }}>
-        Ups... Room not found
+        Ups... You are lost
       </Typography>
       <Link
         to={'/'}

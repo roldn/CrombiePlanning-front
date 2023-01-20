@@ -47,7 +47,7 @@ const Game = () => {
         </>
       )}
 
-      {!room.gameStarted && room.roomId && !room.gameName && !user.username && (
+      {!room.gameStarted && room.roomId && room.gameName && (
         <>
           <Typography
             sx={{
