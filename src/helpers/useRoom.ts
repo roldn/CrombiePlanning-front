@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { User } from '../types/User';
 import useCards from './useCards';
@@ -17,6 +17,7 @@ const useCreateRoom = (socket: Socket) => {
   const { roomParamId } = useParams();
 
   const { time, countdown } = useTimer();
+  const navigate = useNavigate();
 
   const user = useUser(socket);
   const cards = useCards(socket);
@@ -49,10 +50,6 @@ const useCreateRoom = (socket: Socket) => {
       } else {
         socket.emit('client:join_room', { roomId, username });
       }
-
-      if (user.username) {
-        setGameStarted(true);
-      }
     },
     [user.username]
   );
@@ -82,6 +79,7 @@ const useCreateRoom = (socket: Socket) => {
         cards.setCoffee(coffeeTime);
         cards.setCardsVotes(cardsVotes);
         setAverage(average);
+        setGameStarted(true);
 
         const allowedManageGame = gameOptions.allowedReveal.some(
           (u: User) => u.clientId === user.clientId
@@ -120,6 +118,11 @@ const useCreateRoom = (socket: Socket) => {
       cards.setCoffee(false);
       cards.setCanReveal(false);
       cards.fiboCards.forEach(fibo => (fibo.checked = false));
+    });
+
+    socket.on('server:invalid_room', () => {
+      setGameStarted(false);
+      navigate('/404');
     });
   }, []);
 

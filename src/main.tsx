@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Game from './[gameId]';
 import { appTheme } from './Theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
+import NotFound from './404';
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Game />
+  },
+  {
+    path: '404',
+    element: <NotFound />
   }
 ]);
 

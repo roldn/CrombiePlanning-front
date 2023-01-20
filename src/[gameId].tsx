@@ -17,8 +17,6 @@ const Game = () => {
       {room.gameStarted && <div className='game-name'>{room.gameName}</div>}
       {room.gameStarted && <div className='game-username'>{user.username}</div>}
 
-      {/* <h4>Room ID: {room.roomId}</h4> */}
-
       {!room.roomId && !room.gameStarted && (
         <>
           <Typography
@@ -28,7 +26,7 @@ const Game = () => {
               marginTop: -15,
               fontWeight: 600
             }}>
-            Choose a name and a voting system for your game.
+            Choose a name for your game.
           </Typography>
           <StyledTextField
             autoComplete='off'
@@ -49,7 +47,7 @@ const Game = () => {
         </>
       )}
 
-      {!room.gameStarted && room.roomId && (
+      {!room.gameStarted && room.roomId && !room.gameName && !user.username && (
         <>
           <Typography
             sx={{
@@ -80,7 +78,7 @@ const Game = () => {
         </>
       )}
 
-      {room.gameStarted && (
+      {room.gameStarted && room.gameName && (
         <Board
           users={room.users}
           roomId={room.roomId}
@@ -99,7 +97,7 @@ const Game = () => {
         />
       )}
 
-      {!room.revealing && room.gameStarted && room.gameName && (
+      {!room.revealing && room.gameStarted && (
         <Cards
           roomId={room.roomId}
           clientId={user.clientId}

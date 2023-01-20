@@ -11,20 +11,8 @@ const useTimer = () => {
     setTime(2);
     intervalRef.current = setInterval(() => {
       setTime(prev => prev - 1);
-    }, 1000);
+    }, 500);
   }, []);
-
-  //   useEffect(() => {
-  //     const timeout = setInterval(() => {
-  //       if (time === 1) {
-  //         setTime(3);
-  //         return;
-  //       }
-  //       setTime(time - 1);
-  //     }, 1000);
-
-  //     return () => clearInterval(timeout);
-  //   }, [time]);
 
   return { time, countdown };
 };

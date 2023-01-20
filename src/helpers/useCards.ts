@@ -28,8 +28,6 @@ const useCards = (socket: Socket) => {
 
   const revealCards = useCallback((roomId: string) => {
     socket.emit('client:reveal_cards', roomId);
-    // setRevealing(true);
-    // fiboCards.forEach(fibo => (fibo.checked = false));
   }, []);
 
   const handleCardSelect = useCallback(

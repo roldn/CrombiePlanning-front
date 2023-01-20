@@ -88,40 +88,6 @@ const Board: React.FC<Board> = ({
         margin: '0 auto'
       }}>
       {boardContent}
-      {/* {time > 0 ? (
-        <Typography>{time}</Typography>
-      ) : time <= 0 && users && !users.some(user => user.card.length > 0) ? (
-        <Typography sx={{ fontSize: 18 }}>Pick your cards!</Typography>
-      ) : time <= 0 && allowedReveal ? (
-        <StyledButton
-          sx={{
-            width: 160,
-            fontSize: 20
-          }}
-          variant='contained'
-          color='primary'
-          onClick={() => {
-            revealCards(roomId);
-            onReveal();
-          }}>
-          Reveal cards
-        </StyledButton>
-      ) : time <= 0 && !allowedReveal ? (
-        <Typography sx={{ fontSize: 18 }}>Voting in progress</Typography>
-      ) : reveal && !allowedReveal ? (
-        <Typography sx={{ fontSize: 18 }}>Voting finished</Typography>
-      ) : (
-        <StyledButton
-          sx={{
-            width: 160,
-            fontSize: 19
-          }}
-          variant='contained'
-          color='primary'
-          onClick={() => startNewVoting(roomId)}>
-          New Game
-        </StyledButton>
-      )} */}
     </Box>
   );
 };
