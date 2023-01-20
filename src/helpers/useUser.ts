@@ -28,7 +28,7 @@ const useUser = (socket: Socket) => {
 
   const changeUsername = useCallback(
     (roomId: string) => {
-      socket.emit('client:add_username', { username, roomId });
+      socket.emit('client:change_username', { username, roomId });
     },
     [username]
   );
