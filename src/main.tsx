@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Game from './[gameId]';
+import Game from './Game';
 import { appTheme } from './Theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import NotFound from './404';
